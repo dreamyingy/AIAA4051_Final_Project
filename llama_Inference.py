@@ -176,11 +176,15 @@ with torch.no_grad():
         prediction_length = len(generated_tokens)
         merged_prediction = generate_statement(question, prediction)
         merged_true_answer = generate_statement(question, example["correct_answer"])
-        output.append({'prediction': prediction,
-                       'prediction_length': prediction_length,
-                        'true_answer': example["correct_answer"],
-                        'merged_prediction': merged_prediction,
-                        'merged_true_answer': merged_true_answer})
+        output.append({
+            'question': question,
+            'prediction': prediction,
+            'prediction_length': prediction_length,
+            'true_answer': example["correct_answer"],
+            'merged_prediction': merged_prediction,
+            'merged_true_answer': merged_true_answer,
+        })
+
 
         chunk.append(output)
 
