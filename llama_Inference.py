@@ -67,22 +67,38 @@ def generate_one_token(prompt: str, do_sample: bool = False,
     return next_id, next_text, last_token_embedding
 
 def generate_statement(question, answer):
-    statement_prompt = (
-        f"Convert the following Q&A into a single factual sentence.\n"
-        f"Question: {question}\n"
-        f"Answer: {answer}\n"
-        f"Statement:"
+    messages = [
+        {
+            "role": "system",
+            "content": (
+                "Convert question-answer pairs into one standalone factual sentence. "
+                "Return only the sentence. Do not add notes, explanations, examples, or extra tasks."
+            ),
+        },
+        {
+            "role": "user",
+            "content": f"Question: {question}\nAnswer: {answer}\nStatement:",
+        },
+    ]
+    statement_prompt = merge_tokenizer.apply_chat_template(
+        messages,
+        tokenize=False,
+        add_generation_prompt=True,
     )
 
     encoding = merge_tokenizer(statement_prompt, return_tensors="pt").to(args.device)
     outputs = merge_model.generate(
         **encoding,
         do_sample=False,
-        max_new_tokens=128,
+        max_new_tokens=64,
         pad_token_id=merge_tokenizer.pad_token_id,
         eos_token_id=merge_tokenizer.eos_token_id,
     )
     statement = merge_tokenizer.decode(outputs[0][encoding["input_ids"].shape[1]:], skip_special_tokens=True).strip()
+    for marker in ["Human:", "Assistant:", "User:", "System:", "\nQuestion:", "\nAnswer:", "\nOptions", "\nTopic:"]:
+        if marker in statement:
+            statement = statement.split(marker, 1)[0].strip()
+    statement = statement.splitlines()[0].strip() if statement.splitlines() else statement
     return statement
 
 merge_model_path = 'models/Qwen2.5-7B-Instruct' # path to Qwen2.5-7B

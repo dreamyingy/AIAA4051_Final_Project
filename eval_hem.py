@@ -1,5 +1,4 @@
-from transformers import AutoModelForSequenceClassification
-from transformers import AutoTokenizer
+from transformers import AutoConfig, AutoModelForSequenceClassification
 import argparse
 import torch
 import json
@@ -29,6 +28,18 @@ parser.add_argument(
     help="Dataset name under results/.",
 )
 parser.add_argument("--device", default="cuda:0", type=str)
+parser.add_argument(
+    "--hhem_model_path",
+    default="models/hallucination_evaluation_model",
+    type=str,
+    help="Path to the local HHEM model directory.",
+)
+parser.add_argument(
+    "--flan_model_path",
+    default="models/flan-t5-base",
+    type=str,
+    help="Path to the local flan-t5-base directory required by HHEM.",
+)
 args = parser.parse_args()
 
 dataset = args.dataset
@@ -39,9 +50,13 @@ save_path = f"results/{dataset}/correctness.json"
 # Sentences we want sentence embeddings for
 chunks = load_pickle_file(load_path)
 results = [x for chunk in chunks for x in chunk]
-tokenizer=AutoTokenizer.from_pretrained('models/flan-t5-base') # path to flan-t5-base
-model = AutoModelForSequenceClassification.from_pretrained( 
-    'models/hallucination_evaluation_model', trust_remote_code=True) # path to hallucination_evaluation_model
+config = AutoConfig.from_pretrained(args.hhem_model_path, trust_remote_code=True)
+config.foundation = args.flan_model_path
+model = AutoModelForSequenceClassification.from_pretrained(
+    args.hhem_model_path,
+    config=config,
+    trust_remote_code=True,
+)
 model.eval()
 model.to(device)
 
