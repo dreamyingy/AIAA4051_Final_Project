@@ -1,7 +1,9 @@
 from transformers import AutoTokenizer, AutoModel
+import argparse
 import torch
 import torch.nn.functional as F
 from tqdm import tqdm
+import pickle
 
 def load_pickle_file(path): 
     objs = [] 
@@ -19,8 +21,19 @@ def mean_pooling(model_output, attention_mask):
     input_mask_expanded = attention_mask.unsqueeze(-1).expand(token_embeddings.size()).float()
     return torch.sum(token_embeddings * input_mask_expanded, 1) / torch.clamp(input_mask_expanded.sum(1), min=1e-9)
 
-dataset = '...' # specify the dataset
-device = 'cuda:0'
+parser = argparse.ArgumentParser(description="Encode prediction and reference statements with MPNet.")
+parser.add_argument(
+    "--dataset",
+    type=str,
+    choices=["sciq", "simple_questions_wiki", "nq", "truthfulQA"],
+    required=True,
+    help="Dataset name under results/.",
+)
+parser.add_argument("--device", default="cuda:0", type=str)
+args = parser.parse_args()
+
+dataset = args.dataset
+device = args.device
 load_path = f"results/{dataset}/prediction.pkl" 
 
 # Sentences we want sentence embeddings for
@@ -28,8 +41,8 @@ chunks = load_pickle_file(load_path)
 results = [x for chunk in chunks for x in chunk]
 
 # Load model from HuggingFace Hub
-tokenizer = AutoTokenizer.from_pretrained('...') # path to all-mpnet-base-v2
-model = AutoModel.from_pretrained('...', torch_dtype=torch.float16) # path to all-mpnet-base-v2
+tokenizer = AutoTokenizer.from_pretrained('models/all-mpnet-base-v2') # path to all-mpnet-base-v2
+model = AutoModel.from_pretrained('models/all-mpnet-base-v2', torch_dtype=torch.float16) # path to all-mpnet-base-v2
 model.eval()
 model.to(device)
 
@@ -65,6 +78,5 @@ save_obj = {
     "true_embeddings": true_embeddings
 }
 
-import pickle
 with open(save_path, "wb") as f:
     pickle.dump(save_obj, f)
