@@ -49,6 +49,13 @@ Please create a **virtual environment** containing the required packages. Also c
 
 ### Run Inference
 
+```python
+python llama_Inference.py --dataset nq --max_samples 2000
+python llama_Inference.py --dataset sciq --max_samples 2000
+python llama_Inference.py --dataset simple_questions_wiki --max_samples 2000
+python llama_Inference.py --dataset truthfulQA
+```
+
 Run `llama_inference.py` to conduct inference on the following four datasets:
 
 - nq
@@ -63,9 +70,24 @@ You may decide how many samples to process for each dataset, as long as the numb
 
 ### Evaluate Predictions
 
+```python
+conda activate hhem_eval
+python eval_hem.py --dataset nq 
+python eval_hem.py --dataset sciq 
+python eval_hem.py --dataset simple_questions_wiki
+python eval_hem.py --dataset truthfulQA
+```
+
 Run `eval_hem.py` to determine whether the predictions are **correct or hallucinated**.
 
 ### Compute Embeddings
+
+```python
+python encoder_embedding.py --dataset sciq 
+python encoder_embedding.py --dataset simple_questions_wiki 
+python encoder_embedding.py --dataset nq 
+python encoder_embedding.py --dataset truthfulQA 
+```
 
 Run `encoder_embedding.py` to compute embeddings for:
 
