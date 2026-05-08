@@ -43,13 +43,13 @@ Please create a **virtual environment** containing the required packages. Also c
 - sentence-transformers
 - other dependencies required by LlamaFactory
 
-
+# Part 1：Prediction and Representation
 
 ## Run the Scripts
 
 ### Run Inference
 
-```python
+```
 python llama_Inference.py --dataset nq --max_samples 2000
 python llama_Inference.py --dataset sciq --max_samples 2000
 python llama_Inference.py --dataset simple_questions_wiki --max_samples 2000
@@ -70,7 +70,7 @@ You may decide how many samples to process for each dataset, as long as the numb
 
 ### Evaluate Predictions
 
-```python
+```
 conda activate hhem_eval
 python eval_hem.py --dataset nq 
 python eval_hem.py --dataset sciq 
@@ -82,7 +82,7 @@ Run `eval_hem.py` to determine whether the predictions are **correct or hallucin
 
 ### Compute Embeddings
 
-```python
+```
 python encoder_embedding.py --dataset sciq 
 python encoder_embedding.py --dataset simple_questions_wiki 
 python encoder_embedding.py --dataset nq 
@@ -93,3 +93,40 @@ Run `encoder_embedding.py` to compute embeddings for:
 
 - predicted statements
 - ground-truth statements
+
+# Part 2：Similarity Analysis
+
+Part 2 analyzes whether embedding similarity between model predictions and ground-truth answers can indicate prediction correctness.
+
+This step uses the outputs generated in Part 1:
+
+```
+results/{dataset}/prediction.pkl
+results/{dataset}/correctness.json
+results/{dataset}/embeddings.pkl
+```
+
+The analysis script is:
+
+```
+part2_similarity_analysis.py
+```
+
+## What This Script Does
+
+For each dataset, the script:
+
+1. Loads model predictions and rewritten factual statements from `prediction.pkl`.
+2. Loads HHEM consistency scores from `correctness.json`.
+3. Loads prediction/reference embeddings from `embeddings.pkl`.
+4. Computes cosine similarity between each prediction embedding and its corresponding ground-truth embedding.
+5. Uses the HHEM score to define correctness labels:
+
+```
+HHEM score >= label_threshold  -> correct
+HHEM score <  label_threshold  -> incorrect
+```
+By default, `label_threshold = 0.5`.
+
+6. Compares cosine similarity distributions between correct and incorrect predictions.
+7. Computes Pearson and Spearman correlation between HHEM scores and cosine similarity.
