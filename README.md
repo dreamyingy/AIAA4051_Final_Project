@@ -136,7 +136,7 @@ By default, `label_threshold = 0.5`.
 - best-F1 similarity threshold
 - optional fixed similarity threshold metrics
 
-# Main Command
+## Main Command
 
 Run the full Part 2 analysis on all four datasets:
 
@@ -144,14 +144,14 @@ Run the full Part 2 analysis on all four datasets:
 python part2_similarity_analysis.py --label_threshold 0.5
 ```
 
-# Recommended Command With Fixed Similarity Threshold
+## Recommended Command With Fixed Similarity Threshold
 To additionally evaluate a fixed cosine-similarity threshold, run:
 ```
 python part2_similarity_analysis.py --label_threshold 0.5 --similarity_threshold 0.75
 ```
 Here, predictions with cosine similarity greater than or equal to `0.75` are classified as correct by the similarity-based rule.
 
-# Output Files
+## Output Files
 For each dataset, the script writes:
 ```
 results/{dataset}/similarity_scores.csv
@@ -197,7 +197,7 @@ results/part2_similarity_summary.csv
 results/part2_similarity_summary.json
 ```
 
-# Interpretation
+## Interpretation
 
 The Part 2 analysis addresses two main questions.
 
