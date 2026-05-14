@@ -475,7 +475,7 @@ python part4_failure_analysis.py \
     --out_dir results/part4_improvement
 ```
 
-##5. Notes
+## 5. Notes
 -Evaluation uses HHEM-derived labels (not human annotations)
 -The structured evaluator is a lightweight proof-of-concept
 -No additional model training is required
