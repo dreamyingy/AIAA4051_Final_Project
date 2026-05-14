@@ -287,3 +287,199 @@ It provides a compact view of whether similarity-based correctness prediction wo
 Second, it evaluates whether cosine similarity can be used as a threshold-based correctness indicator. ROC-AUC and Average Precision measure ranking quality, while the best-F1 threshold and optional fixed threshold evaluate direct binary classification performance.
 
 The best-F1 threshold is selected on the same dataset being evaluated, so it should be interpreted as an in-sample exploratory threshold rather than a guaranteed general threshold.
+
+# Part 4: Failure Analysis & Structured Evaluation
+
+This part focuses on analyzing the limitations of embedding-based similarity for LLM prediction evaluation and implementing a structured improvement framework.
+
+It consists of two main components:
+
+- Failure case analysis (diagnosing when cosine similarity fails)
+- Adaptive Structured Similarity Evaluator (a lightweight improvement over cosine thresholding)
+
+---
+
+## 1. Failure Analysis
+
+File: `part4_failure_analysis.py` :contentReference[oaicite:0]{index=0}
+
+### Overview
+
+This script analyzes when cosine similarity fails as a proxy for correctness.
+
+It:
+- Loads similarity scores and HHEM labels
+- Applies dataset-specific best-F1 thresholds
+- Identifies failure cases:
+  - False positives (high similarity but incorrect)
+  - False negatives (low similarity but correct)
+- Automatically classifies failure types
+
+---
+
+### Key Features
+
+#### 1. Failure Type Detection
+
+The script identifies common failure patterns:
+
+- `numeric_or_date_mismatch`
+- `negation_or_contradiction`
+- `entity_or_relation_mismatch`
+- `semantic_ambiguity`
+- `lexical_variation_or_paraphrase`
+- `overly_strict_threshold_or_hhem_artifact`
+
+These are inferred using heuristics such as:
+
+- number extraction
+- negation detection
+- token-level Jaccard similarity
+
+---
+
+#### 2. Dataset-Level Thresholding
+
+Thresholds are loaded from:
+results/part2_similarity_summary.json 
+or dataset-level summaries.
+
+Each sample is classified using:
+cosine_similarity >= dataset_threshold
+
+
+---
+
+#### 3. Outputs
+
+The script generates:
+
+- `all_scores_with_failure_flags.csv`
+- `part4_confusion_summary.csv`
+- `failure_cases_for_manual_annotation.csv`
+- `auto_failure_reason_summary.csv`
+- `failure_counts_by_dataset.png`
+
+These outputs support both quantitative analysis and manual inspection.
+
+---
+
+## 2. Adaptive Structured Similarity Evaluator
+
+File: `part4_improved_evaluator.py` :contentReference[oaicite:1]{index=1}
+
+### Overview
+
+This module implements a lightweight improvement over the cosine-threshold evaluator.
+
+Instead of relying only on embedding similarity, it introduces:
+
+- structured factual checks
+- recovery rules for likely false negatives
+- adaptive control based on dataset characteristics
+
+---
+
+### 2.1 Baseline
+
+The original evaluator uses:
+y = 1 if cosine_similarity >= threshold else 0
+
+
+---
+
+### 2.2 Structured Rules
+
+#### (A) Blocking Modules (reduce false positives)
+
+Reject predictions with critical factual mismatches:
+
+- number/date mismatch
+- negation mismatch
+- contrastive category mismatch (e.g., male vs female)
+- comparison direction mismatch (e.g., A > B vs B > A)
+
+---
+
+#### (B) Recovery Modules (reduce false negatives)
+
+Recover likely correct predictions using:
+
+- exact or containment match
+- high token-level Jaccard similarity
+- refusal-style answer matching
+
+---
+
+### 2.3 Balanced Evaluator
+
+Applies all structured rules uniformly:
+prediction = baseline OR recovery
+prediction = prediction AND NOT critical_mismatch
+
+
+---
+
+### 2.4 Adaptive Evaluator
+
+Adds dataset-level control:
+if dataset_threshold >= 0.95:
+use baseline
+else:
+use structured evaluator
+
+
+This prevents over-correction on datasets like TruthfulQA, where thresholds are already very strict.
+
+---
+
+### 2.5 Outputs
+
+The script generates:
+
+- `improvement_metrics.csv`
+- `all_scores_with_improvement_predictions.csv`
+- `structured_feature_summary.csv`
+- `improvement_config.json`
+
+---
+
+## 3. Key Insights
+
+From the experiments:
+
+- Cosine similarity is effective but incomplete
+- Major failure modes include:
+  - numeric mismatch
+  - entity mismatch
+  - comparison-direction errors
+  - long-form partial answers
+- Structured rules significantly improve performance
+- Adaptive control is necessary for noisy or ambiguous datasets
+
+---
+
+## 4. Usage
+
+### Step 1: Run failure analysis
+
+```bash
+python part4_failure_analysis.py \
+    --results_dir results \
+    --out_dir results/part4_failure_analysis
+```
+
+### Step 2: Run structured evaluator
+```python part4_improved_evaluator.py \
+    --input results/part4_failure_analysis/all_scores_with_failure_flags.csv \
+    --out_dir results/part4_improvement
+```
+
+##5. Notes
+-Evaluation uses HHEM-derived labels (not human annotations)
+-The structured evaluator is a lightweight proof-of-concept
+-No additional model training is required
+-Designed for interpretability and reproducibility
+
+
+
