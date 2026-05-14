@@ -301,7 +301,7 @@ It consists of two main components:
 
 ## 1. Failure Analysis
 
-File: `part4_failure_analysis.py` :contentReference[oaicite:0]{index=0}
+File: `part4_failure_analysis.py` 
 
 ### Overview
 
