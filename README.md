@@ -476,10 +476,10 @@ python part4_failure_analysis.py \
 ```
 
 ## 5. Notes
--Evaluation uses HHEM-derived labels (not human annotations)
--The structured evaluator is a lightweight proof-of-concept
--No additional model training is required
--Designed for interpretability and reproducibility
+- Evaluation uses HHEM-derived labels (not human annotations)
+- The structured evaluator is a lightweight proof-of-concept
+- No additional model training is required
+- Designed for interpretability and reproducibility
 
 
 
