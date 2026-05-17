@@ -508,10 +508,10 @@ x = x / (np.linalg.norm(x, axis=1, keepdims=True) + 1e-8) * 0.95.
 ### Step3:
 Auto select curvature for different lengths of answers. Adopt heuristic thresholds based on token/word counts, or fix moderate-to-low curvature values to avoid distortion.
 c = 0.1 for short and 0.3 for long.
-### 6.2 similarity analysis for hyperbolic (part2_similarity_analysis_hyperbolic.py)
+### 6.2 Similarity analysis for hyperbolic (part2_similarity_analysis_hyperbolic.py)
 Same as part2_similarity_analysis but import hyperbolic for similarity calculation.
 
-### Outcome
+### 6.3 Outcome
 
 The script generates:
 - part2_similarity_summary.csv
