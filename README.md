@@ -481,5 +481,38 @@ python part4_failure_analysis.py \
 - No additional model training is required
 - Designed for interpretability and reproducibility
 
+## 6. Hyperbolic Mixture-of-Curvature Embeddings
+File: hyperbolic_metrics.py, part2_similarity_analysis_hyperbolic.py
 
+### Overview
+This part shows a new method embedding vectors into hyperbolic space and a new semantic similarity evaluation method.
+To evaluate if the long-form dataset truly has a high confidence prediction, we also  introduce the difference of Pearson r as a metric.
+It introduces:
+- adaptive hyperbolic space depending on length of two answers
+- Poincaré distance dD(u, v)
+- new semantic similarity method S_hyp
 
+### 6.1 Pipeline
+
+#### Step1:
+Avoid boundary singu-larities
+new vector = vector * scale=0.95
+#### Step2：
+- Input Preprocessing: Ensure inputs are L2-normalized with norms < 1.0. If coming from a neural network, apply:
+x = x / (np.linalg.norm(x, axis=1, keepdims=True) + 1e-8) * 0.95.
+- Training vs. Inference: This is a NumPy evaluation/inference implementation. For training loops, replace np.* with torch.* or tf.* to maintain gradient flow.
+- Threshold Tuning: mask_long = seq_lengths > 80 is based on typical English/Chinese token distributions. 
+- Decay Coefficient: The 1.5 in exp(-1.5 * dist) acts as a temperature parameter.
+  - Increase to 2.0~3.0 for sharper discrimination.
+  - Decrease to 0.8~1.2 for smoother similarity transitions.
+### Step3:
+Auto select curvature for different lengths of answers. Adopt heuristic thresholds based on token/word counts, or fix moderate-to-low curvature values to avoid distortion.
+c = 0.1 for short and 0.3 for long.
+### 6.2 similarity analysis for hyperbolic (part2_similarity_analysis_hyperbolic.py)
+Same as part2_similarity_analysis but import hyperbolic for similarity calculation.
+
+### Outcome
+
+The script generates:
+- part2_similarity_summary.csv
+- part2_similarity_summary.json
