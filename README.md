@@ -288,7 +288,7 @@ Second, it evaluates whether cosine similarity can be used as a threshold-based 
 
 The best-F1 threshold is selected on the same dataset being evaluated, so it should be interpreted as an in-sample exploratory threshold rather than a guaranteed general threshold.
 
-# Part 4: Failure Analysis & Structured Evaluation
+# Part 4A: Failure Analysis & Structured Evaluation
 
 This part focuses on analyzing the limitations of embedding-based similarity for LLM prediction evaluation and implementing a structured improvement framework.
 
@@ -481,10 +481,10 @@ python part4_failure_analysis.py \
 - No additional model training is required
 - Designed for interpretability and reproducibility
 
-## 6. Hyperbolic Mixture-of-Curvature Embeddings
+# Part 4B: Hyperbolic Mixture-of-Curvature Embeddings
 File: hyperbolic_metrics.py, part2_similarity_analysis_hyperbolic.py
 
-### Overview
+## 1. Overview
 This part shows a new method embedding vectors into hyperbolic space and a new semantic similarity evaluation method.
 To evaluate if the long-form dataset truly has a high confidence prediction, we also  introduce the difference of Pearson r as a metric.
 It introduces:
@@ -492,7 +492,7 @@ It introduces:
 - Poincaré distance dD(u, v)
 - new semantic similarity method S_hyp
 
-### 6.1 Pipeline
+## 2. Pipeline
 
 #### Step1:
 Avoid boundary singu-larities
@@ -508,10 +508,10 @@ x = x / (np.linalg.norm(x, axis=1, keepdims=True) + 1e-8) * 0.95.
 ### Step3:
 Auto select curvature for different lengths of answers. Adopt heuristic thresholds based on token/word counts, or fix moderate-to-low curvature values to avoid distortion.
 c = 0.1 for short and 0.3 for long.
-### 6.2 Similarity analysis for hyperbolic (part2_similarity_analysis_hyperbolic.py)
+## 3. Similarity analysis for hyperbolic (part2_similarity_analysis_hyperbolic.py)
 Same as part2_similarity_analysis but import hyperbolic for similarity calculation.
 
-### 6.3 Outcome
+## 4. Outcome
 
 The script generates:
 - part2_similarity_summary.csv
